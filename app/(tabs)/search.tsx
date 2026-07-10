@@ -1,10 +1,19 @@
 import LeagueCard from "@/components/cards/LeagueCard";
 import PlayerCard from "@/components/cards/PlayerCard";
+import { searchPlayers } from "@/services/apiFootball";
 import { Ionicons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-const players = [
+type PlayerResult = {
+  id: string;
+  name: string;
+  club: string;
+  position: string;
+  rating: string;
+};
+
+const samplePlayers: PlayerResult[] = [
   {
     id: "mbappe",
     name: "Kylian Mbappé",
@@ -51,15 +60,18 @@ const players = [
 
 export default function SearchScreen() {
   const [query, setQuery] = useState("");
+  const [apiPlayers, setApiPlayers] = useState<PlayerResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
 
-  const filteredPlayers = useMemo(() => {
+  const localResults = useMemo(() => {
     const search = query.toLowerCase().trim();
 
     if (!search) {
-      return players;
+      return samplePlayers;
     }
 
-    return players.filter((player) => {
+    return samplePlayers.filter((player) => {
       return (
         player.name.toLowerCase().includes(search) ||
         player.club.toLowerCase().includes(search) ||
@@ -67,6 +79,51 @@ export default function SearchScreen() {
       );
     });
   }, [query]);
+
+  useEffect(() => {
+    const search = query.trim();
+
+    if (search.length < 3) {
+      setApiPlayers([]);
+      setApiError("");
+      setLoading(false);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      try {
+        setLoading(true);
+        setApiError("");
+
+        const data = await searchPlayers(search);
+
+        const realPlayers: PlayerResult[] =
+          data?.response?.map((item: any) => {
+            const player = item.player;
+
+            return {
+              id: String(player?.id ?? player?.name ?? Math.random()),
+              name: player?.name ?? "Unknown Player",
+              club: "Club data coming soon",
+              position: "Player",
+              rating: "N/A",
+            };
+          }) ?? [];
+
+        setApiPlayers(realPlayers);
+      } catch (error) {
+        console.log("API-Football search error:", error);
+        setApiError("Could not load real API results yet. Showing sample data.");
+        setApiPlayers([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  const resultsToShow = apiPlayers.length > 0 ? apiPlayers : localResults;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -85,15 +142,20 @@ export default function SearchScreen() {
           placeholder="Search players..."
           placeholderTextColor="#888"
           style={styles.input}
+          autoCapitalize="none"
         />
       </View>
+
+      {loading && <Text style={styles.loadingText}>Searching API-Football...</Text>}
+
+      {apiError ? <Text style={styles.errorText}>{apiError}</Text> : null}
 
       <Text style={styles.sectionTitle}>
         {query ? `Results for "${query}"` : "Suggested Players"}
       </Text>
 
-      {filteredPlayers.length > 0 ? (
-        filteredPlayers.map((player) => (
+      {resultsToShow.length > 0 ? (
+        resultsToShow.map((player) => (
           <PlayerCard
             key={player.id}
             id={player.id}
@@ -121,10 +183,10 @@ export default function SearchScreen() {
       <LeagueCard name="MLS" country="United States" icon="flag" />
 
       <View style={styles.infoBox}>
-        <Text style={styles.infoTitle}>Coming Soon</Text>
+        <Text style={styles.infoTitle}>API-Football Connected</Text>
         <Text style={styles.infoText}>
-          This search page will connect to API-Football so users can search
-          every available professional player, club, league, and competition.
+          Search now attempts to load real player data from API-Football. Sample
+          players still appear as a backup while we build the full database.
         </Text>
       </View>
 
@@ -172,6 +234,19 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     flex: 1,
     fontSize: 16,
+  },
+
+  loadingText: {
+    color: "#00C853",
+    fontSize: 14,
+    marginTop: 8,
+  },
+
+  errorText: {
+    color: "#FFD700",
+    fontSize: 14,
+    marginTop: 8,
+    lineHeight: 20,
   },
 
   sectionTitle: {
