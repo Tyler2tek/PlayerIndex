@@ -11,6 +11,9 @@ type PlayerResult = {
   club: string;
   position: string;
   rating: string;
+  photo?: string;
+  age?: string;
+  nationality?: string;
 };
 
 const samplePlayers: PlayerResult[] = [
@@ -104,9 +107,12 @@ export default function SearchScreen() {
             return {
               id: String(player?.id ?? player?.name ?? Math.random()),
               name: player?.name ?? "Unknown Player",
-              club: "Club data coming soon",
-              position: "Player",
+              club: player?.birth?.country ?? "Unknown country",
+              position: player?.position ?? "Player",
               rating: "N/A",
+              photo: player?.photo,
+              age: player?.age ? String(player.age) : undefined,
+              nationality: player?.nationality,
             };
           }) ?? [];
 
@@ -163,6 +169,9 @@ export default function SearchScreen() {
             club={player.club}
             position={player.position}
             rating={player.rating}
+            photo={player.photo}
+            age={player.age}
+            nationality={player.nationality}
           />
         ))
       ) : (
@@ -185,8 +194,8 @@ export default function SearchScreen() {
       <View style={styles.infoBox}>
         <Text style={styles.infoTitle}>API-Football Connected</Text>
         <Text style={styles.infoText}>
-          Search now attempts to load real player data from API-Football. Sample
-          players still appear as a backup while we build the full database.
+          Search now loads real API-Football players with photos, age, and
+          nationality when available.
         </Text>
       </View>
 

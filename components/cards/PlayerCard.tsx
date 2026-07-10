@@ -1,7 +1,7 @@
 import { useFavoritesStore } from "@/store/favoritesStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 type PlayerCardProps = {
   id?: string;
@@ -9,6 +9,9 @@ type PlayerCardProps = {
   club: string;
   position: string;
   rating?: string;
+  photo?: string;
+  age?: string;
+  nationality?: string;
 };
 
 export default function PlayerCard({
@@ -17,9 +20,16 @@ export default function PlayerCard({
   club,
   position,
   rating = "8.7",
+  photo,
+  age,
+  nationality,
 }: PlayerCardProps) {
   const isFavorite = useFavoritesStore((state) => state.isFavorite(id));
   const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
+  const extraDetails = [age ? `${age} yrs` : null, nationality]
+    .filter(Boolean)
+    .join(" • ");
 
   return (
     <Pressable
@@ -30,14 +40,23 @@ export default function PlayerCard({
       onPress={() => router.push(`/player/${id}`)}
     >
       <View style={styles.avatar}>
-        <Ionicons name="person" size={28} color="#00C853" />
+        {photo ? (
+          <Image source={{ uri: photo }} style={styles.photo} />
+        ) : (
+          <Ionicons name="person" size={28} color="#00C853" />
+        )}
       </View>
 
       <View style={styles.info}>
         <Text style={styles.name}>{name}</Text>
+
         <Text style={styles.details}>
           {club} • {position}
         </Text>
+
+        {extraDetails ? (
+          <Text style={styles.extraDetails}>{extraDetails}</Text>
+        ) : null}
       </View>
 
       <View style={styles.rightSide}>
@@ -83,13 +102,20 @@ const styles = StyleSheet.create({
   },
 
   avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: "#102418",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 14,
+    overflow: "hidden",
+  },
+
+  photo: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
   },
 
   info: {
@@ -106,6 +132,12 @@ const styles = StyleSheet.create({
     color: "#888",
     fontSize: 14,
     marginTop: 5,
+  },
+
+  extraDetails: {
+    color: "#666",
+    fontSize: 13,
+    marginTop: 4,
   },
 
   rightSide: {
