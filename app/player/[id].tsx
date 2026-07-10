@@ -2,8 +2,64 @@ import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
+const players = {
+  mbappe: {
+    name: "Kylian Mbappé",
+    club: "Real Madrid",
+    position: "Forward",
+    nation: "France",
+    age: "26",
+    shirt: "#10",
+    rating: "9.2",
+    goals: "24",
+    assists: "9",
+    matches: "31",
+    minutes: "2,640",
+    summary:
+      "Mbappé is an elite attacking threat with world-class speed, finishing, and movement. He is dangerous in transition and can change a match with one run behind the defense.",
+    previousClubs: "PSG • Monaco",
+  },
+
+  yamal: {
+    name: "Lamine Yamal",
+    club: "Barcelona",
+    position: "Winger",
+    nation: "Spain",
+    age: "18",
+    shirt: "#19",
+    rating: "8.9",
+    goals: "11",
+    assists: "14",
+    matches: "35",
+    minutes: "2,480",
+    summary:
+      "Yamal is one of the most exciting young wingers in world football. His dribbling, creativity, left foot, and confidence make him a major attacking weapon.",
+    previousClubs: "Barcelona Academy",
+  },
+
+  haaland: {
+    name: "Erling Haaland",
+    club: "Manchester City",
+    position: "Striker",
+    nation: "Norway",
+    age: "25",
+    shirt: "#9",
+    rating: "9.0",
+    goals: "29",
+    assists: "6",
+    matches: "34",
+    minutes: "2,770",
+    summary:
+      "Haaland is a dominant striker known for his power, movement, finishing, and ability to score from almost anywhere inside the box.",
+    previousClubs: "Borussia Dortmund • RB Salzburg • Molde",
+  },
+};
+
 export default function PlayerProfileScreen() {
   const { id } = useLocalSearchParams();
+
+  const player =
+    players[String(id) as keyof typeof players] ?? players.mbappe;
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -12,11 +68,14 @@ export default function PlayerProfileScreen() {
           <Ionicons name="person" size={58} color="#00C853" />
         </View>
 
-        <Text style={styles.name}>Kylian Mbappé</Text>
-        <Text style={styles.subtitle}>Real Madrid • Forward</Text>
+        <Text style={styles.name}>{player.name}</Text>
+
+        <Text style={styles.subtitle}>
+          {player.club} • {player.position}
+        </Text>
 
         <View style={styles.ratingBox}>
-          <Text style={styles.rating}>9.2</Text>
+          <Text style={styles.rating}>{player.rating}</Text>
           <Text style={styles.ratingLabel}>Player Rating</Text>
         </View>
       </View>
@@ -24,47 +83,38 @@ export default function PlayerProfileScreen() {
       <Text style={styles.sectionTitle}>Player Info</Text>
 
       <View style={styles.infoGrid}>
-        <InfoBox label="Age" value="26" />
-        <InfoBox label="Nation" value="France" />
-        <InfoBox label="Position" value="FW" />
-        <InfoBox label="Shirt" value="#10" />
+        <InfoBox label="Age" value={player.age} />
+        <InfoBox label="Nation" value={player.nation} />
+        <InfoBox label="Position" value={player.position} />
+        <InfoBox label="Shirt" value={player.shirt} />
       </View>
 
       <Text style={styles.sectionTitle}>Season Stats</Text>
 
       <View style={styles.statsGrid}>
-        <StatBox label="Goals" value="24" />
-        <StatBox label="Assists" value="9" />
-        <StatBox label="Matches" value="31" />
-        <StatBox label="Minutes" value="2,640" />
+        <StatBox label="Goals" value={player.goals} />
+        <StatBox label="Assists" value={player.assists} />
+        <StatBox label="Matches" value={player.matches} />
+        <StatBox label="Minutes" value={player.minutes} />
       </View>
 
       <Text style={styles.sectionTitle}>AI Player Summary</Text>
 
       <View style={styles.aiCard}>
-        <Text style={styles.aiTitle}>Elite Attacking Threat</Text>
-        <Text style={styles.aiText}>
-          Mbappé is one of the most dangerous forwards in world football. His
-          speed, finishing, movement, and ability to attack space make him a
-          constant threat in transition and around the box.
-        </Text>
+        <Text style={styles.aiTitle}>Scouting Report</Text>
+        <Text style={styles.aiText}>{player.summary}</Text>
       </View>
 
       <Text style={styles.sectionTitle}>Career Snapshot</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Current Club</Text>
-        <Text style={styles.cardSubtitle}>Real Madrid</Text>
+        <Text style={styles.cardSubtitle}>{player.club}</Text>
       </View>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Previous Clubs</Text>
-        <Text style={styles.cardSubtitle}>PSG • Monaco</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Profile ID</Text>
-        <Text style={styles.cardSubtitle}>{String(id)}</Text>
+        <Text style={styles.cardSubtitle}>{player.previousClubs}</Text>
       </View>
 
       <View style={styles.bottomSpace} />

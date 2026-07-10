@@ -16,6 +16,7 @@ export default function HomeScreen() {
       <Text style={styles.sectionTitle}>🔥 Trending Players</Text>
 
       <PlayerCard
+        id="mbappe"
         name="Kylian Mbappé"
         club="Real Madrid"
         position="Forward"
@@ -23,6 +24,7 @@ export default function HomeScreen() {
       />
 
       <PlayerCard
+        id="yamal"
         name="Lamine Yamal"
         club="Barcelona"
         position="Winger"
@@ -30,6 +32,7 @@ export default function HomeScreen() {
       />
 
       <PlayerCard
+        id="haaland"
         name="Erling Haaland"
         club="Manchester City"
         position="Striker"
