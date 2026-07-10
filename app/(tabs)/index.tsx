@@ -1,98 +1,135 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import LeagueCard from "@/components/cards/LeagueCard";
+import MatchCard from "@/components/cards/MatchCard";
+import PlayerCard from "@/components/cards/PlayerCard";
+import SearchBar from "@/components/common/SearchBar";
+import { ScrollView, StyleSheet, Text } from "react-native";
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Text style={styles.logo}>⚽ PlayerIndex</Text>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      <Text style={styles.greeting}>Good Evening, Tyler 👋</Text>
+
+      <SearchBar />
+
+      <Text style={styles.sectionTitle}>🔥 Trending Players</Text>
+
+      <PlayerCard
+        name="Kylian Mbappé"
+        club="Real Madrid"
+        position="Forward"
+        rating="9.2"
+      />
+
+      <PlayerCard
+        name="Lamine Yamal"
+        club="Barcelona"
+        position="Winger"
+        rating="8.9"
+      />
+
+      <PlayerCard
+        name="Erling Haaland"
+        club="Manchester City"
+        position="Striker"
+        rating="9.0"
+      />
+
+      <Text style={styles.sectionTitle}>⚽ Live Matches</Text>
+
+      <MatchCard
+        competition="Premier League"
+        homeTeam="Liverpool"
+        awayTeam="Arsenal"
+        homeScore={2}
+        awayScore={1}
+        status="LIVE"
+      />
+
+      <MatchCard
+        competition="LaLiga"
+        homeTeam="Barcelona"
+        awayTeam="Real Madrid"
+        homeScore={1}
+        awayScore={1}
+        status="72'"
+      />
+
+      <MatchCard
+        competition="UEFA Champions League"
+        homeTeam="PSG"
+        awayTeam="Bayern Munich"
+        status="Tomorrow"
+      />
+
+      <Text style={styles.sectionTitle}>🏆 Top Competitions</Text>
+
+      <LeagueCard name="Premier League" country="England" icon="trophy" />
+
+      <LeagueCard name="LaLiga" country="Spain" icon="football" />
+
+      <LeagueCard
+        name="UEFA Champions League"
+        country="Europe"
+        icon="star"
+      />
+
+      <LeagueCard name="MLS" country="United States" icon="flag" />
+
+      <Text style={styles.sectionTitle}>📰 Latest News</Text>
+
+      <Text style={styles.newsCard}>
+        Transfer news, injury updates, and AI summaries will appear here once
+        live data is connected.
+      </Text>
+
+      <Text style={styles.bottomSpace}> </Text>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: "#0D0D0D",
+    paddingHorizontal: 20,
+    paddingTop: 60,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+
+  logo: {
+    color: "white",
+    fontSize: 34,
+    fontWeight: "800",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+
+  greeting: {
+    color: "#AAAAAA",
+    fontSize: 17,
+    marginTop: 8,
+  },
+
+  sectionTitle: {
+    color: "white",
+    fontSize: 22,
+    fontWeight: "700",
+    marginTop: 22,
+    marginBottom: 14,
+  },
+
+  newsCard: {
+    backgroundColor: "#1B1B1B",
+    color: "#AAAAAA",
+    borderRadius: 22,
+    padding: 18,
+    marginBottom: 14,
+    borderWidth: 1,
+    borderColor: "#242424",
+    fontSize: 15,
+    lineHeight: 22,
+  },
+
+  bottomSpace: {
+    height: 40,
   },
 });
