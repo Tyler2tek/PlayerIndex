@@ -30,12 +30,23 @@ export async function getTeamsByLeague(leagueId: number, season: number) {
   return apiFootballRequest(`/teams?league=${leagueId}&season=${season}`);
 }
 
-export async function getPlayersByTeam(teamId: number, season: number) {
+export async function getPlayersByTeam(teamId: number) {
   return apiFootballRequest(`/players/squads?team=${teamId}`);
 }
 
 export async function searchPlayers(playerName: string) {
   return apiFootballRequest(`/players/profiles?search=${playerName}`);
+}
+
+export async function getPlayerProfileById(playerId: string | number) {
+  return apiFootballRequest(`/players/profiles?player=${playerId}`);
+}
+
+export async function getPlayerStatsById(
+  playerId: string | number,
+  season: number
+) {
+  return apiFootballRequest(`/players?id=${playerId}&season=${season}`);
 }
 
 export async function getFixturesByDate(date: string) {

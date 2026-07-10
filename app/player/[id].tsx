@@ -1,8 +1,41 @@
+import {
+    getPlayerProfileById,
+    getPlayerStatsById,
+} from "@/services/apiFootball";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Stack, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 
-const players = {
+const CURRENT_SEASON = 2024;
+
+function convertKgToPounds(weight?: string | null) {
+  if (!weight) return "Not available";
+
+  const kgNumber = Number(String(weight).replace(/[^0-9.]/g, ""));
+
+  if (!kgNumber) return "Not available";
+
+  const pounds = Math.round(kgNumber * 2.20462);
+
+  return `${pounds} lbs`;
+}
+
+function convertCmToFeetInches(height?: string | null) {
+  if (!height) return "Not available";
+
+  const cmNumber = Number(String(height).replace(/[^0-9.]/g, ""));
+
+  if (!cmNumber) return "Not available";
+
+  const totalInches = Math.round(cmNumber / 2.54);
+  const feet = Math.floor(totalInches / 12);
+  const inches = totalInches % 12;
+
+  return `${feet}'${inches}"`;
+}
+
+const samplePlayers = {
   mbappe: {
     name: "Kylian Mbappé",
     club: "Real Madrid",
@@ -11,23 +44,24 @@ const players = {
     age: "26",
     shirt: "#10",
     rating: "9.2",
+    photo: "",
     goals: "24",
     assists: "9",
     matches: "31",
     minutes: "2,640",
-    marketValue: "€180M",
-    preferredFoot: "Right",
-    height: "178 cm",
+    height: `5'10"`,
+    weight: "161 lbs",
+    birthDate: "December 20, 1998",
+    birthPlace: "Paris",
+    birthCountry: "France",
     summary:
       "Mbappé is an elite attacking threat with world-class speed, finishing, and movement. He is dangerous in transition and can change a match with one run behind the defense.",
     strengths: ["Speed", "Finishing", "Movement", "1v1 Attacking"],
     weaknesses: ["Aerial duels", "Defensive work rate"],
     previousClubs: ["PSG", "Monaco"],
-    transfers: [
-      { from: "PSG", to: "Real Madrid", fee: "Free Transfer", year: "2024" },
-      { from: "Monaco", to: "PSG", fee: "€180M", year: "2018" },
-    ],
     similarPlayers: ["Vinícius Jr", "Rafael Leão", "Marcus Rashford"],
+    isApiPlayer: false,
+    hasStats: true,
   },
 
   yamal: {
@@ -38,20 +72,24 @@ const players = {
     age: "18",
     shirt: "#19",
     rating: "8.9",
+    photo: "",
     goals: "11",
     assists: "14",
     matches: "35",
     minutes: "2,480",
-    marketValue: "€150M",
-    preferredFoot: "Left",
-    height: "180 cm",
+    height: `5'11"`,
+    weight: "159 lbs",
+    birthDate: "July 13, 2007",
+    birthPlace: "Esplugues de Llobregat",
+    birthCountry: "Spain",
     summary:
       "Yamal is one of the most exciting young wingers in world football. His dribbling, creativity, left foot, and confidence make him a major attacking weapon.",
     strengths: ["Dribbling", "Creativity", "Crossing", "Chance Creation"],
     weaknesses: ["Physical strength", "Defensive consistency"],
     previousClubs: ["Barcelona Academy"],
-    transfers: [{ from: "Barcelona Academy", to: "Barcelona", fee: "Academy", year: "2023" }],
     similarPlayers: ["Bukayo Saka", "Arda Güler", "Phil Foden"],
+    isApiPlayer: false,
+    hasStats: true,
   },
 
   haaland: {
@@ -62,23 +100,24 @@ const players = {
     age: "25",
     shirt: "#9",
     rating: "9.0",
+    photo: "",
     goals: "29",
     assists: "6",
     matches: "34",
     minutes: "2,770",
-    marketValue: "€180M",
-    preferredFoot: "Left",
-    height: "194 cm",
+    height: `6'4"`,
+    weight: "194 lbs",
+    birthDate: "July 21, 2000",
+    birthPlace: "Leeds",
+    birthCountry: "England",
     summary:
       "Haaland is a dominant striker known for his power, movement, finishing, and ability to score from almost anywhere inside the box.",
     strengths: ["Finishing", "Strength", "Positioning", "Runs in behind"],
     weaknesses: ["Link-up play", "Dribbling in tight spaces"],
     previousClubs: ["Borussia Dortmund", "RB Salzburg", "Molde"],
-    transfers: [
-      { from: "Borussia Dortmund", to: "Manchester City", fee: "€60M", year: "2022" },
-      { from: "RB Salzburg", to: "Borussia Dortmund", fee: "€20M", year: "2020" },
-    ],
     similarPlayers: ["Victor Osimhen", "Harry Kane", "Alexander Isak"],
+    isApiPlayer: false,
+    hasStats: true,
   },
 
   messi: {
@@ -89,23 +128,24 @@ const players = {
     age: "39",
     shirt: "#10",
     rating: "8.8",
+    photo: "",
     goals: "18",
     assists: "16",
     matches: "28",
     minutes: "2,210",
-    marketValue: "€20M",
-    preferredFoot: "Left",
-    height: "170 cm",
+    height: `5'7"`,
+    weight: "159 lbs",
+    birthDate: "June 24, 1987",
+    birthPlace: "Rosario",
+    birthCountry: "Argentina",
     summary:
       "Messi is an all-time great playmaker and forward. His vision, control, passing, and finishing make him one of the most complete attackers ever.",
     strengths: ["Vision", "Passing", "Dribbling", "Finishing"],
     weaknesses: ["Pressing intensity", "Defensive coverage"],
     previousClubs: ["PSG", "Barcelona", "Newell's Youth"],
-    transfers: [
-      { from: "PSG", to: "Inter Miami", fee: "Free Transfer", year: "2023" },
-      { from: "Barcelona", to: "PSG", fee: "Free Transfer", year: "2021" },
-    ],
     similarPlayers: ["Paulo Dybala", "Antoine Griezmann", "Bernardo Silva"],
+    isApiPlayer: false,
+    hasStats: true,
   },
 
   ronaldo: {
@@ -116,23 +156,24 @@ const players = {
     age: "41",
     shirt: "#7",
     rating: "8.6",
+    photo: "",
     goals: "25",
     assists: "5",
     matches: "30",
     minutes: "2,500",
-    marketValue: "€15M",
-    preferredFoot: "Right",
-    height: "187 cm",
+    height: `6'2"`,
+    weight: "183 lbs",
+    birthDate: "February 5, 1985",
+    birthPlace: "Funchal",
+    birthCountry: "Portugal",
     summary:
       "Ronaldo is one of the greatest goal scorers in football history. His finishing, movement, aerial ability, and mentality have made him elite for decades.",
     strengths: ["Finishing", "Heading", "Movement", "Mentality"],
     weaknesses: ["Pressing", "Acceleration compared to prime years"],
     previousClubs: ["Manchester United", "Juventus", "Real Madrid", "Sporting CP"],
-    transfers: [
-      { from: "Manchester United", to: "Al Nassr", fee: "Free Transfer", year: "2023" },
-      { from: "Juventus", to: "Manchester United", fee: "€17M", year: "2021" },
-    ],
     similarPlayers: ["Harry Kane", "Robert Lewandowski", "Karim Benzema"],
+    isApiPlayer: false,
+    hasStats: true,
   },
 
   bellingham: {
@@ -143,37 +184,168 @@ const players = {
     age: "23",
     shirt: "#5",
     rating: "9.1",
+    photo: "",
     goals: "18",
     assists: "10",
     matches: "36",
     minutes: "3,050",
-    marketValue: "€180M",
-    preferredFoot: "Right",
-    height: "186 cm",
+    height: `6'1"`,
+    weight: "165 lbs",
+    birthDate: "June 29, 2003",
+    birthPlace: "Stourbridge",
+    birthCountry: "England",
     summary:
       "Bellingham is a complete modern midfielder with elite physicality, ball-carrying, goal threat, and leadership. He can impact every phase of the game.",
     strengths: ["Ball carrying", "Work rate", "Finishing", "Leadership"],
     weaknesses: ["Risky tackles", "Can overcommit forward"],
     previousClubs: ["Borussia Dortmund", "Birmingham City"],
-    transfers: [
-      { from: "Borussia Dortmund", to: "Real Madrid", fee: "€103M", year: "2023" },
-      { from: "Birmingham City", to: "Borussia Dortmund", fee: "€25M", year: "2020" },
-    ],
     similarPlayers: ["Jamal Musiala", "Pedri", "Federico Valverde"],
+    isApiPlayer: false,
+    hasStats: true,
   },
+};
+
+type PlayerProfile = {
+  name: string;
+  club: string;
+  position: string;
+  nation: string;
+  age: string;
+  shirt: string;
+  rating: string;
+  photo?: string;
+  goals: string;
+  assists: string;
+  matches: string;
+  minutes: string;
+  height: string;
+  weight: string;
+  birthDate: string;
+  birthPlace: string;
+  birthCountry: string;
+  summary: string;
+  strengths: string[];
+  weaknesses: string[];
+  previousClubs: string[];
+  similarPlayers: string[];
+  isApiPlayer: boolean;
+  hasStats: boolean;
 };
 
 export default function PlayerProfileScreen() {
   const { id } = useLocalSearchParams();
+  const playerId = String(id);
 
-  const player =
-    players[String(id) as keyof typeof players] ?? players.mbappe;
+  const samplePlayer =
+    samplePlayers[playerId as keyof typeof samplePlayers];
+
+  const [apiPlayer, setApiPlayer] = useState<PlayerProfile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [apiError, setApiError] = useState("");
+
+  useEffect(() => {
+    if (samplePlayer) return;
+
+    async function loadApiPlayer() {
+      try {
+        setLoading(true);
+        setApiError("");
+
+        const profileData = await getPlayerProfileById(playerId);
+        const statsData = await getPlayerStatsById(playerId, CURRENT_SEASON);
+
+        const profile = profileData?.response?.[0]?.player;
+        const statsItem = statsData?.response?.[0];
+        const stats = statsItem?.statistics?.[0];
+
+        if (!profile) {
+          throw new Error("No player profile found.");
+        }
+
+        const hasRealStats =
+          Boolean(stats?.games?.appearences) ||
+          Boolean(stats?.goals?.total) ||
+          Boolean(stats?.goals?.assists) ||
+          Boolean(stats?.games?.minutes);
+
+        const realPlayer: PlayerProfile = {
+          name: profile?.name ?? "Unknown Player",
+          club: stats?.team?.name ?? "Club data coming soon",
+          position: stats?.games?.position ?? "Professional Player",
+          nation: profile?.nationality ?? profile?.birth?.country ?? "Unknown",
+          age: profile?.age ? String(profile.age) : "Not available",
+          shirt: stats?.games?.number ? `#${stats.games.number}` : "Not available",
+          rating: stats?.games?.rating
+            ? Number(stats.games.rating).toFixed(1)
+            : "N/A",
+          photo: profile?.photo,
+          goals: hasRealStats ? String(stats?.goals?.total ?? 0) : "—",
+          assists: hasRealStats ? String(stats?.goals?.assists ?? 0) : "—",
+          matches: hasRealStats ? String(stats?.games?.appearences ?? 0) : "—",
+          minutes: hasRealStats ? String(stats?.games?.minutes ?? 0) : "—",
+          height: convertCmToFeetInches(profile?.height),
+          weight: convertKgToPounds(profile?.weight),
+          birthDate: profile?.birth?.date ?? "Not available",
+          birthPlace: profile?.birth?.place ?? "Not available",
+          birthCountry: profile?.birth?.country ?? "Not available",
+          summary:
+            "This profile is connected to API-Football. PlayerIndex can load real player information like photo, age, nationality, height, weight, birth details, club, and position. More advanced stats, scouting, transfers, and similar players will be added next.",
+          strengths: ["Real player photo", "API profile data", "Live player database"],
+          weaknesses: ["Advanced scouting coming soon", "Transfer data coming soon"],
+          previousClubs: [stats?.team?.name ?? "Club history coming soon"],
+          similarPlayers: ["Coming soon"],
+          isApiPlayer: true,
+          hasStats: hasRealStats,
+        };
+
+        setApiPlayer(realPlayer);
+      } catch (error) {
+        console.log("Player profile API error:", error);
+        setApiError("Could not load this API player profile yet.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadApiPlayer();
+  }, [playerId, samplePlayer]);
+
+  const player = samplePlayer ?? apiPlayer;
+
+  if (loading) {
+    return (
+      <View style={styles.centerScreen}>
+        <Stack.Screen options={{ title: "Loading..." }} />
+        <Text style={styles.loadingTitle}>Loading player profile...</Text>
+        <Text style={styles.loadingSubtitle}>Getting API-Football data</Text>
+      </View>
+    );
+  }
+
+  if (!player) {
+    return (
+      <View style={styles.centerScreen}>
+        <Stack.Screen options={{ title: "Profile" }} />
+        <Ionicons name="alert-circle" size={44} color="#FFD700" />
+        <Text style={styles.loadingTitle}>Profile not found</Text>
+        <Text style={styles.loadingSubtitle}>
+          {apiError || "This player profile could not be loaded."}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <Stack.Screen options={{ title: player.name }} />
+
       <View style={styles.header}>
         <View style={styles.avatar}>
-          <Ionicons name="person" size={58} color="#00C853" />
+          {player.photo ? (
+            <Image source={{ uri: player.photo }} style={styles.photo} />
+          ) : (
+            <Ionicons name="person" size={58} color="#00C853" />
+          )}
         </View>
 
         <Text style={styles.name}>{player.name}</Text>
@@ -188,6 +360,16 @@ export default function PlayerProfileScreen() {
         </View>
       </View>
 
+      {player.isApiPlayer && (
+        <View style={styles.apiBox}>
+          <Text style={styles.apiTitle}>Connected to API-Football</Text>
+          <Text style={styles.apiText}>
+            This profile is using real API-Football player data. Height is shown
+            in feet and inches, and weight is shown in pounds.
+          </Text>
+        </View>
+      )}
+
       <Text style={styles.sectionTitle}>Overview</Text>
 
       <View style={styles.infoGrid}>
@@ -195,13 +377,25 @@ export default function PlayerProfileScreen() {
         <InfoBox label="Nation" value={player.nation} />
         <InfoBox label="Position" value={player.position} />
         <InfoBox label="Shirt" value={player.shirt} />
-        <InfoBox label="Foot" value={player.preferredFoot} />
         <InfoBox label="Height" value={player.height} />
-        <InfoBox label="Value" value={player.marketValue} />
+        <InfoBox label="Weight" value={player.weight} />
+        <InfoBox label="Birth Date" value={player.birthDate} />
+        <InfoBox label="Birth Place" value={player.birthPlace} />
+        <InfoBox label="Birth Country" value={player.birthCountry} />
         <InfoBox label="Club" value={player.club} />
       </View>
 
       <Text style={styles.sectionTitle}>Season Stats</Text>
+
+      {!player.hasStats && (
+        <View style={styles.warningBox}>
+          <Ionicons name="information-circle" size={22} color="#FFD700" />
+          <Text style={styles.warningText}>
+            Season stats are not available for this player yet, but the profile
+            data loaded correctly.
+          </Text>
+        </View>
+      )}
 
       <View style={styles.statsGrid}>
         <StatBox label="Goals" value={player.goals} />
@@ -234,22 +428,7 @@ export default function PlayerProfileScreen() {
       {player.previousClubs.map((club) => (
         <View style={styles.card} key={club}>
           <Text style={styles.cardTitle}>{club}</Text>
-          <Text style={styles.cardSubtitle}>Previous club</Text>
-        </View>
-      ))}
-
-      <Text style={styles.sectionTitle}>Transfers</Text>
-
-      {player.transfers.map((transfer) => (
-        <View
-          style={styles.transferCard}
-          key={`${transfer.from}-${transfer.to}-${transfer.year}`}
-        >
-          <Text style={styles.transferYear}>{transfer.year}</Text>
-          <Text style={styles.transferTitle}>
-            {transfer.from} → {transfer.to}
-          </Text>
-          <Text style={styles.transferFee}>{transfer.fee}</Text>
+          <Text style={styles.cardSubtitle}>Club data</Text>
         </View>
       ))}
 
@@ -312,6 +491,30 @@ const styles = StyleSheet.create({
     paddingTop: 60,
   },
 
+  centerScreen: {
+    flex: 1,
+    backgroundColor: "#0D0D0D",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 28,
+  },
+
+  loadingTitle: {
+    color: "white",
+    fontSize: 24,
+    fontWeight: "900",
+    textAlign: "center",
+    marginTop: 14,
+  },
+
+  loadingSubtitle: {
+    color: "#AAAAAA",
+    fontSize: 15,
+    textAlign: "center",
+    marginTop: 8,
+    lineHeight: 22,
+  },
+
   header: {
     alignItems: "center",
     marginBottom: 20,
@@ -327,6 +530,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#00C853",
     marginBottom: 16,
+    overflow: "hidden",
+  },
+
+  photo: {
+    width: 118,
+    height: 118,
+    borderRadius: 59,
   },
 
   name: {
@@ -340,6 +550,7 @@ const styles = StyleSheet.create({
     color: "#AAAAAA",
     fontSize: 16,
     marginTop: 6,
+    textAlign: "center",
   },
 
   ratingBox: {
@@ -362,6 +573,47 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700",
     marginTop: 2,
+  },
+
+  apiBox: {
+    backgroundColor: "#102418",
+    borderRadius: 22,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "#00C853",
+    marginBottom: 8,
+  },
+
+  apiTitle: {
+    color: "#00C853",
+    fontSize: 17,
+    fontWeight: "900",
+  },
+
+  apiText: {
+    color: "#CCCCCC",
+    fontSize: 14,
+    marginTop: 6,
+    lineHeight: 20,
+  },
+
+  warningBox: {
+    backgroundColor: "#241F10",
+    borderRadius: 18,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: "#FFD700",
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 14,
+  },
+
+  warningText: {
+    color: "#F5F5F5",
+    fontSize: 14,
+    lineHeight: 20,
+    marginLeft: 10,
+    flex: 1,
   },
 
   sectionTitle: {
@@ -494,34 +746,6 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     color: "#888",
     fontSize: 15,
-    marginTop: 6,
-  },
-
-  transferCard: {
-    backgroundColor: "#1B1B1B",
-    borderRadius: 22,
-    padding: 18,
-    marginBottom: 14,
-    borderWidth: 1,
-    borderColor: "#242424",
-  },
-
-  transferYear: {
-    color: "#00C853",
-    fontSize: 14,
-    fontWeight: "900",
-  },
-
-  transferTitle: {
-    color: "white",
-    fontSize: 17,
-    fontWeight: "800",
-    marginTop: 8,
-  },
-
-  transferFee: {
-    color: "#AAAAAA",
-    fontSize: 14,
     marginTop: 6,
   },
 
