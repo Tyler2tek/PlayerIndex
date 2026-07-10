@@ -1,3 +1,4 @@
+import { useFavoritesStore } from "@/store/favoritesStore";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
@@ -17,6 +18,9 @@ export default function PlayerCard({
   position,
   rating = "8.7",
 }: PlayerCardProps) {
+  const isFavorite = useFavoritesStore((state) => state.isFavorite(id));
+  const toggleFavorite = useFavoritesStore((state) => state.toggleFavorite);
+
   return (
     <Pressable
       style={({ pressed }) => [
@@ -36,8 +40,31 @@ export default function PlayerCard({
         </Text>
       </View>
 
-      <View style={styles.ratingBox}>
-        <Text style={styles.rating}>{rating}</Text>
+      <View style={styles.rightSide}>
+        <View style={styles.ratingBox}>
+          <Text style={styles.rating}>{rating}</Text>
+        </View>
+
+        <Pressable
+          style={styles.favoriteButton}
+          onPress={(event) => {
+            event.stopPropagation();
+
+            toggleFavorite({
+              id,
+              name,
+              club,
+              position,
+              rating,
+            });
+          }}
+        >
+          <Ionicons
+            name={isFavorite ? "star" : "star-outline"}
+            size={22}
+            color={isFavorite ? "#FFD700" : "#888"}
+          />
+        </Pressable>
       </View>
     </Pressable>
   );
@@ -81,6 +108,11 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
 
+  rightSide: {
+    alignItems: "center",
+    gap: 8,
+  },
+
   ratingBox: {
     backgroundColor: "#00C853",
     borderRadius: 12,
@@ -92,5 +124,9 @@ const styles = StyleSheet.create({
     color: "#001B0A",
     fontWeight: "800",
     fontSize: 14,
+  },
+
+  favoriteButton: {
+    padding: 4,
   },
 });

@@ -1,9 +1,12 @@
 import LeagueCard from "@/components/cards/LeagueCard";
 import MatchCard from "@/components/cards/MatchCard";
 import PlayerCard from "@/components/cards/PlayerCard";
+import { useFavoritesStore } from "@/store/favoritesStore";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 export default function FavoritesScreen() {
+  const favoritePlayers = useFavoritesStore((state) => state.favoritePlayers);
+
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       <Text style={styles.title}>Favorites</Text>
@@ -14,19 +17,25 @@ export default function FavoritesScreen() {
 
       <Text style={styles.sectionTitle}>Favorite Players</Text>
 
-      <PlayerCard
-        name="Lamine Yamal"
-        club="Barcelona"
-        position="Winger"
-        rating="8.9"
-      />
-
-      <PlayerCard
-        name="Jude Bellingham"
-        club="Real Madrid"
-        position="Midfielder"
-        rating="9.1"
-      />
+      {favoritePlayers.length > 0 ? (
+        favoritePlayers.map((player) => (
+          <PlayerCard
+            key={player.id}
+            id={player.id}
+            name={player.name}
+            club={player.club}
+            position={player.position}
+            rating={player.rating}
+          />
+        ))
+      ) : (
+        <View style={styles.emptyBox}>
+          <Text style={styles.emptyTitle}>No favorite players yet</Text>
+          <Text style={styles.emptyText}>
+            Tap the ⭐ on any player card to add them here.
+          </Text>
+        </View>
+      )}
 
       <Text style={styles.sectionTitle}>Favorite Competitions</Text>
 
@@ -45,9 +54,8 @@ export default function FavoritesScreen() {
       <View style={styles.infoBox}>
         <Text style={styles.infoTitle}>Coming Soon</Text>
         <Text style={styles.infoText}>
-          You’ll be able to favorite any player, club, league, or match. 
-          PlayerIndex will send alerts for goals, assists, lineups, injuries, 
-          transfers, and breaking news.
+          PlayerIndex will send alerts for goals, assists, lineups, injuries,
+          transfers, and breaking news from your favorite players.
         </Text>
       </View>
 
@@ -83,6 +91,27 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     marginTop: 24,
     marginBottom: 14,
+  },
+
+  emptyBox: {
+    backgroundColor: "#1B1B1B",
+    borderRadius: 22,
+    padding: 18,
+    borderWidth: 1,
+    borderColor: "#242424",
+  },
+
+  emptyTitle: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "800",
+  },
+
+  emptyText: {
+    color: "#888",
+    fontSize: 14,
+    marginTop: 6,
+    lineHeight: 20,
   },
 
   infoBox: {
