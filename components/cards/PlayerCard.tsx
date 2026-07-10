@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import { router } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 type PlayerCardProps = {
+  id?: string;
   name: string;
   club: string;
   position: string;
@@ -9,13 +11,20 @@ type PlayerCardProps = {
 };
 
 export default function PlayerCard({
+  id = "1",
   name,
   club,
   position,
   rating = "8.7",
 }: PlayerCardProps) {
   return (
-    <View style={styles.card}>
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        pressed && { opacity: 0.75, transform: [{ scale: 0.98 }] },
+      ]}
+      onPress={() => router.push(`/player/${id}`)}
+    >
       <View style={styles.avatar}>
         <Ionicons name="person" size={28} color="#00C853" />
       </View>
@@ -30,7 +39,7 @@ export default function PlayerCard({
       <View style={styles.ratingBox}>
         <Text style={styles.rating}>{rating}</Text>
       </View>
-    </View>
+    </Pressable>
   );
 }
 
